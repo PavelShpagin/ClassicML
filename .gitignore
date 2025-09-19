@@ -1,0 +1,31 @@
+# OS
+Thumbs.db
+Desktop.ini
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+.python-version
+.venv/
+venv/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Data and models
+data/raw/
+data/processed/
+data/interim/
+reports/figures/
+models/
+submission.csv
+
+# IDE / tooling
+.vscode/
+.idea/
+.DS_Store
+*.log
+

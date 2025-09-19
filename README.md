@@ -660,3 +660,8 @@ Toan Nguyen Mau
 0.59984
 37
 11d
+
+Implementation notes
+- Project scaffolded under `data/`, `src/`, `notebooks/`, `models/`, `reports/`.
+- Core utilities in `src/data.py`, `src/features.py`, `src/models.py` for loading, feature engineering, and modeling with the competition metric.
+- Use `notebooks/eda.ipynb` for exploratory analysis and `notebooks/train.ipynb` for training and submission.
