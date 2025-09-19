@@ -79,8 +79,10 @@ def split_month_sector(df: pd.DataFrame, month_col: str = "month", sector_col: s
 
     result = df.copy()
     if month_col in result.columns:
-        result["year"] = result[month_col].astype(str).str.slice(0, 4).astype(int)
-        result["month_num"] = result[month_col].astype(str).str.slice(5, None).map(month_codes)
+        # handle both '2019 Jan' and '2019-Jan'
+        m = result[month_col].astype(str).str.replace('-', ' ', regex=False)
+        result["year"] = m.str.slice(0, 4).astype(int)
+        result["month_num"] = m.str.slice(5, None).map(month_codes)
         result["time"] = (result["year"] - 2019) * 12 + result["month_num"] - 1
 
     if sector_col in result.columns:
