@@ -11,6 +11,8 @@ from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
 from sklearn.naive_bayes import GaussianNB
 from sklearn.preprocessing import StandardScaler
 from sklearn.pipeline import Pipeline
+from sklearn.gaussian_process import GaussianProcessRegressor
+from sklearn.gaussian_process.kernels import RBF, ConstantKernel as C, WhiteKernel
 
 
 def competition_score(y_true: np.ndarray, y_pred: np.ndarray, eps: float = 1e-12) -> Dict[str, float]:
@@ -110,5 +112,15 @@ def build_gaussian_baseline() -> Pipeline:
     # Classify zero vs non-zero and then regress magnitude with Ridge.
     # Kept for classic ML benchmarking completeness.
     return Pipeline([("scaler", StandardScaler(with_mean=False)), ("reg", Ridge(alpha=1.0, random_state=42))])
+
+
+def build_gaussian_process(length_scale: float = 12.0, noise_level: float = 1.0) -> GaussianProcessRegressor:
+    """Gaussian Process Regressor with RBF kernel over engineered features.
+
+    For time-series lags, an RBF kernel with moderate length scale can capture
+    smooth variations. This is computationally heavy; use on reduced feature sets.
+    """
+    kernel = C(1.0, (1e-3, 1e3)) * RBF(length_scale=length_scale, length_scale_bounds=(1e-2, 1e3)) + WhiteKernel(noise_level=noise_level)
+    return GaussianProcessRegressor(kernel=kernel, normalize_y=True, random_state=42)
 
 

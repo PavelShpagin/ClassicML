@@ -84,7 +84,7 @@ Avoid Data Leakage
 When predicting for a certain month, participants are not supposed to use any data corresponding to a future time period relative to said month.
 
 Files
-train/*.csv - the training set
+train/\*.csv - the training set
 test.csv - the test set
 sample_submission.csv - a sample submission file in the correct format
 Columns
@@ -377,24 +377,27 @@ education_expenditure_10k: The expenditure on education in 10,000 yuan.
 
 EXAMPLE SOLUTIONS:
 
-
 import pandas as pd
 
 # Read 2 submission files
+
 sub1 = pd.read_csv("/kaggle/input/enhancing-with-weight-decay-from-geometric-mean/submission.csv")
 sub2 = pd.read_csv("/kaggle/input/simple-seasonality-bump/submission.csv")
 
 # Check if ids match
+
 assert all(sub1["id"] == sub2["id"]), "IDs do not match between the two files!"
 
 # Ensemble (you can adjust the weights if needed)
-sub_ens = sub1.copy()
+
+sub*ens = sub1.copy()
 sub_ens["new_house_transaction_amount"] = (
-    0.35 * sub1["new_house_transaction_amount"] +
-    0.55 * sub2["new_house_transaction_amount"]
+0.35 * sub1["new_house_transaction_amount"] +
+0.55 \_ sub2["new_house_transaction_amount"]
 )
 
 # Save to a new file
+
 sub_ens.to_csv("submission.csv", index=False)
 
 print("✅ Ensemble submission.csv file created successfully")
@@ -406,8 +409,8 @@ Reference:
 
 Kaggle competition
 def custom_score(y_true, y_pred, eps=1e-12):
-    """Scoring function of the competition as defined on the competition overview page.
-    
+"""Scoring function of the competition as defined on the competition overview page.
+
     Parameters:
     -----------
     y_true : array-like
@@ -444,7 +447,9 @@ def custom_score(y_true, y_pred, eps=1e-12):
     score = 1 - scaled_mape
     # score = max(0.0, score)
     return {'score': score, 'good_rate': good_rate, 'str': f"{score=:.3f} {good_rate=:.3f}"}
+
 # We read all the data although this baseline notebook ignores most of it
+
 # We convert the string-encoded months to integer values (time is 0..66 for train and 67..78 for test)
 
 ci = pd.read_csv('/kaggle/input/china-real-estate-demand-prediction/train/city_indexes.csv') # one row per year
@@ -460,34 +465,33 @@ train_nhtns = pd.read_csv('/kaggle/input/china-real-estate-demand-prediction/tra
 test = pd.read_csv('/kaggle/input/china-real-estate-demand-prediction/test.csv')
 
 month_codes = {
-    'Jan': 1,
-    'Feb': 2,
-    'Mar': 3,
-    'Apr': 4,
-    'May': 5,
-    'Jun': 6,
-    'Jul': 7,
-    'Aug': 8,
-    'Sep': 9,
-    'Oct': 10,
-    'Nov': 11,
-    'Dec': 12
+'Jan': 1,
+'Feb': 2,
+'Mar': 3,
+'Apr': 4,
+'May': 5,
+'Jun': 6,
+'Jul': 7,
+'Aug': 8,
+'Sep': 9,
+'Oct': 10,
+'Nov': 11,
+'Dec': 12
 }
 
-test_id = test.id.str.split('_', expand=True)
+test*id = test.id.str.split('*', expand=True)
 test['month'] = test_id[0]
 test['sector'] = test_id[1]
 del test_id
 
 for df in [train_lt, train_ltns, train_pht, train_phtns, train_nht, train_nhtns, csi, sp, test]:
-    if df is not csi:
-        df['sector_id'] = df.sector.str.slice(7, None).astype(int)
-        # print(df.sector_id.min(), df.sector_id.max(), len(np.unique(df.sector_id)), len(df))
-    if df is not sp:
-        df['year'] = df.month.str.slice(0, 4).astype(int)
-        df['month'] = df.month.str.slice(5, None).map(month_codes)
-        df['time'] = (df['year'] - 2019) * 12 + df['month'] - 1 # min=0, max=66
-        print(df['time'].min(), df['time'].max())
+if df is not csi:
+df['sector_id'] = df.sector.str.slice(7, None).astype(int) # print(df.sector_id.min(), df.sector_id.max(), len(np.unique(df.sector_id)), len(df))
+if df is not sp:
+df['year'] = df.month.str.slice(0, 4).astype(int)
+df['month'] = df.month.str.slice(5, None).map(month_codes)
+df['time'] = (df['year'] - 2019) \* 12 + df['month'] - 1 # min=0, max=66
+print(df['time'].min(), df['time'].max())
 0 66
 0 66
 0 66
@@ -508,29 +512,32 @@ The test dataframe is the cartesian product of the 96 sectors and the 12 test mo
 We now extract the target variable amount_new_house_transactions into a 2d array. Every column of the array is a time series, and the competition tasks basically consists of extrapolating to the next 12 rows of this array:
 
 amount_new_house_transactions = train_nht.set_index(['time', 'sector_id']).amount_new_house_transactions.unstack()
+
 # Missing values must be filled with zero:
+
 amount_new_house_transactions = amount_new_house_transactions.fillna(0)
+
 # We add sector 95, which has no transactions during the training period:
+
 amount_new_house_transactions[95] = 0
 amount_new_house_transactions = amount_new_house_transactions[np.arange(1, 97)]
 amount_new_house_transactions.astype(int)
-sector_id	1	2	3	4	5	6	7	8	9	10	...	87	88	89	90	91	92	93	94	95	96
-time																					
-0	13827	28277	0	1424	792	607	39326	10454	4170	11043	...	0	37312	9676	1795	14989	26427	16539	70238	0	0
-1	8802	12868	0	1522	409	603	13707	3015	1318	9916	...	0	14923	5709	0	4185	15702	12333	43823	0	0
-2	23283	18694	0	1779	833	1024	16279	3602	30631	10852	...	263	57859	25247	0	9404	28988	26310	116638	0	809
-3	26626	15460	0	663	0	3471	17472	6238	27396	3387	...	0	17610	14016	0	6764	37055	34804	146907	0	535
-4	8649	20565	0	1387	0	4863	12227	3597	10354	3140	...	0	18462	4510	2279	7866	37666	52138	108483	0	0
-...	...	...	...	...	...	...	...	...	...	...	...	...	...	...	...	...	...	...	...	...	...
-62	4605	7552	15716	71227	1847	12306	7058	7474	44942	44429	...	0	4187	3559	9023	29480	38262	13316	21061	0	0
-63	3622	3155	3248	64991	2712	19563	5948	6278	10381	52813	...	0	3111	2304	9620	11058	28710	13961	18301	0	0
-64	4229	3833	1013	71032	500	17662	5503	2653	6260	54442	...	0	3594	0	7302	19585	28258	15912	18053	0	0
-65	19445	16514	8205	98927	7173	19212	7392	2668	8505	77559	...	0	4703	2759	4538	54214	30980	15043	16515	0	0
-66	9295	2197	9428	83402	1575	12505	10583	4549	12885	42217	...	0	3774	0	7631	32450	30804	22335	13389	0	561
+sector_id 1 2 3 4 5 6 7 8 9 10 ... 87 88 89 90 91 92 93 94 95 96
+time
+0 13827 28277 0 1424 792 607 39326 10454 4170 11043 ... 0 37312 9676 1795 14989 26427 16539 70238 0 0
+1 8802 12868 0 1522 409 603 13707 3015 1318 9916 ... 0 14923 5709 0 4185 15702 12333 43823 0 0
+2 23283 18694 0 1779 833 1024 16279 3602 30631 10852 ... 263 57859 25247 0 9404 28988 26310 116638 0 809
+3 26626 15460 0 663 0 3471 17472 6238 27396 3387 ... 0 17610 14016 0 6764 37055 34804 146907 0 535
+4 8649 20565 0 1387 0 4863 12227 3597 10354 3140 ... 0 18462 4510 2279 7866 37666 52138 108483 0 0
+... ... ... ... ... ... ... ... ... ... ... ... ... ... ... ... ... ... ... ... ... ...
+62 4605 7552 15716 71227 1847 12306 7058 7474 44942 44429 ... 0 4187 3559 9023 29480 38262 13316 21061 0 0
+63 3622 3155 3248 64991 2712 19563 5948 6278 10381 52813 ... 0 3111 2304 9620 11058 28710 13961 18301 0 0
+64 4229 3833 1013 71032 500 17662 5503 2653 6260 54442 ... 0 3594 0 7302 19585 28258 15912 18053 0 0
+65 19445 16514 8205 98927 7173 19212 7392 2668 8505 77559 ... 0 4703 2759 4538 54214 30980 15043 16515 0 0
+66 9295 2197 9428 83402 1575 12505 10583 4549 12885 42217 ... 0 3774 0 7631 32450 30804 22335 13389 0 561
 67 rows × 96 columns
 
 A diagram of the total amounts (summed over all 96 sectors) shows that the time series has no obvious trend, but distinctive peaks every December:
-
 
 Baseline prediction
 Our baseline model works as follows:
@@ -546,9 +553,9 @@ t2 = 6 # months which must be nonzero
 cv = TimeSeriesSplit(n_splits=4, test_size=12)
 true, oof = [], []
 for fold, (idx_tr, idx_va) in enumerate(cv.split(amount_new_house_transactions)):
-    print(f"# Fold {fold}: train on months {idx_tr.min()}..{idx_tr.max()}, validate on months {idx_va.min()}..{idx_va.max()}")
-    a_tr = amount_new_house_transactions.iloc[idx_tr]
-    a_va = amount_new_house_transactions.iloc[idx_va]
+print(f"# Fold {fold}: train on months {idx_tr.min()}..{idx_tr.max()}, validate on months {idx_va.min()}..{idx_va.max()}")
+a_tr = amount_new_house_transactions.iloc[idx_tr]
+a_va = amount_new_house_transactions.iloc[idx_va]
 
     a_pred = pd.DataFrame(
         {time: np.exp(np.log(a_tr.tail(t1)).mean(axis=0)) for time in idx_va}
@@ -561,29 +568,39 @@ for fold, (idx_tr, idx_va) in enumerate(cv.split(amount_new_house_transactions))
     oof.append(a_pred)
 
 print(f"# Overall {custom_score(pd.concat(true), pd.concat(oof))['str']} {t1=} {t2=}\n")
+
 # Fold 0: train on months 0..18, validate on months 19..30
+
 # Fold 0: score=0.391 good_rate=0.941
 
 # Fold 1: train on months 0..30, validate on months 31..42
+
 # Fold 1: score=0.440 good_rate=0.759
 
 # Fold 2: train on months 0..42, validate on months 43..54
+
 # Fold 2: score=0.479 good_rate=0.840
 
 # Fold 3: train on months 0..54, validate on months 55..66
+
 # Fold 3: score=0.511 good_rate=0.803
 
 # Overall score=0.447 good_rate=0.836 t1=6 t2=6
+
 # Fold 0: train on months 0..18, validate on months 19..30
+
 # Fold 0: score=0.391 good_rate=0.941
 
 # Fold 1: train on months 0..30, validate on months 31..42
+
 # Fold 1: score=0.440 good_rate=0.759
 
 # Fold 2: train on months 0..42, validate on months 43..54
+
 # Fold 2: score=0.479 good_rate=0.840
 
 # Fold 3: train on months 0..54, validate on months 55..66
+
 # Fold 3: score=0.511 good_rate=0.803
 
 # Overall score=0.447 good_rate=0.836 t1=6 t2=6
@@ -591,25 +608,25 @@ print(f"# Overall {custom_score(pd.concat(true), pd.concat(oof))['str']} {t1=} {
 Submission
 a_tr = amount_new_house_transactions
 a_pred = pd.DataFrame(
-    {time: a_tr.tail(t1).mean(axis=0) for time in np.arange(67, 79)}
+{time: a_tr.tail(t1).mean(axis=0) for time in np.arange(67, 79)}
 ).T
 a_pred.loc[:, a_tr.tail(t2).min(axis=0) == 0] = 0
 a_pred.index.rename('time', inplace=True)
 display(a_pred.astype(int))
-sector_id	1	2	3	4	5	6	7	8	9	10	...	87	88	89	90	91	92	93	94	95	96
-time																					
-67	7912	6199	7561	69254	2399	16158	6529	4202	16586	47686	...	0	3284	0	7177	26101	28374	15521	16183	0	0
-68	7912	6199	7561	69254	2399	16158	6529	4202	16586	47686	...	0	3284	0	7177	26101	28374	15521	16183	0	0
-69	7912	6199	7561	69254	2399	16158	6529	4202	16586	47686	...	0	3284	0	7177	26101	28374	15521	16183	0	0
-70	7912	6199	7561	69254	2399	16158	6529	4202	16586	47686	...	0	3284	0	7177	26101	28374	15521	16183	0	0
-71	7912	6199	7561	69254	2399	16158	6529	4202	16586	47686	...	0	3284	0	7177	26101	28374	15521	16183	0	0
-72	7912	6199	7561	69254	2399	16158	6529	4202	16586	47686	...	0	3284	0	7177	26101	28374	15521	16183	0	0
-73	7912	6199	7561	69254	2399	16158	6529	4202	16586	47686	...	0	3284	0	7177	26101	28374	15521	16183	0	0
-74	7912	6199	7561	69254	2399	16158	6529	4202	16586	47686	...	0	3284	0	7177	26101	28374	15521	16183	0	0
-75	7912	6199	7561	69254	2399	16158	6529	4202	16586	47686	...	0	3284	0	7177	26101	28374	15521	16183	0	0
-76	7912	6199	7561	69254	2399	16158	6529	4202	16586	47686	...	0	3284	0	7177	26101	28374	15521	16183	0	0
-77	7912	6199	7561	69254	2399	16158	6529	4202	16586	47686	...	0	3284	0	7177	26101	28374	15521	16183	0	0
-78	7912	6199	7561	69254	2399	16158	6529	4202	16586	47686	...	0	3284	0	7177	26101	28374	15521	16183	0	0
+sector_id 1 2 3 4 5 6 7 8 9 10 ... 87 88 89 90 91 92 93 94 95 96
+time
+67 7912 6199 7561 69254 2399 16158 6529 4202 16586 47686 ... 0 3284 0 7177 26101 28374 15521 16183 0 0
+68 7912 6199 7561 69254 2399 16158 6529 4202 16586 47686 ... 0 3284 0 7177 26101 28374 15521 16183 0 0
+69 7912 6199 7561 69254 2399 16158 6529 4202 16586 47686 ... 0 3284 0 7177 26101 28374 15521 16183 0 0
+70 7912 6199 7561 69254 2399 16158 6529 4202 16586 47686 ... 0 3284 0 7177 26101 28374 15521 16183 0 0
+71 7912 6199 7561 69254 2399 16158 6529 4202 16586 47686 ... 0 3284 0 7177 26101 28374 15521 16183 0 0
+72 7912 6199 7561 69254 2399 16158 6529 4202 16586 47686 ... 0 3284 0 7177 26101 28374 15521 16183 0 0
+73 7912 6199 7561 69254 2399 16158 6529 4202 16586 47686 ... 0 3284 0 7177 26101 28374 15521 16183 0 0
+74 7912 6199 7561 69254 2399 16158 6529 4202 16586 47686 ... 0 3284 0 7177 26101 28374 15521 16183 0 0
+75 7912 6199 7561 69254 2399 16158 6529 4202 16586 47686 ... 0 3284 0 7177 26101 28374 15521 16183 0 0
+76 7912 6199 7561 69254 2399 16158 6529 4202 16586 47686 ... 0 3284 0 7177 26101 28374 15521 16183 0 0
+77 7912 6199 7561 69254 2399 16158 6529 4202 16586 47686 ... 0 3284 0 7177 26101 28374 15521 16183 0 0
+78 7912 6199 7561 69254 2399 16158 6529 4202 16586 47686 ... 0 3284 0 7177 26101 28374 15521 16183 0 0
 12 rows × 96 columns
 
 test['new_house_transaction_amount'] = a_pred.T.unstack().values
@@ -662,6 +679,7 @@ Toan Nguyen Mau
 11d
 
 Implementation notes
+
 - Project scaffolded under `data/`, `src/`, `notebooks/`, `models/`, `reports/`.
 - Core utilities in `src/data.py`, `src/features.py`, `src/models.py` for loading, feature engineering, and modeling with the competition metric.
 - Use `notebooks/eda.ipynb` for exploratory analysis and `notebooks/train.ipynb` for training and submission.
