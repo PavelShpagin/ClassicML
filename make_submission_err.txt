@@ -1,0 +1,25 @@
+Traceback (most recent call last):
+  File "C:\Users\Pavel\Development\Kaggle\ClassicML\scripts\make_submission.py", line 103, in <module>
+    main()
+  File "C:\Users\Pavel\Development\Kaggle\ClassicML\scripts\make_submission.py", line 64, in main
+    .pipe(build_time_lagged_features)  # to ensure time/sector_id present even if month/sector format differs
+  File "C:\Users\Pavel\AppData\Local\Programs\Python\Python310\lib\site-packages\pandas\core\generic.py", line 6231, in pipe
+    return common.pipe(self, func, *args, **kwargs)
+  File "C:\Users\Pavel\AppData\Local\Programs\Python\Python310\lib\site-packages\pandas\core\common.py", line 502, in pipe
+    return func(obj, *args, **kwargs)
+  File "C:\Users\Pavel\Development\Kaggle\ClassicML\src\features.py", line 29, in build_time_lagged_features
+    g = g.set_index("time").sort_index()
+  File "C:\Users\Pavel\AppData\Local\Programs\Python\Python310\lib\site-packages\pandas\core\frame.py", line 6186, in set_index
+    del frame[c]
+  File "C:\Users\Pavel\AppData\Local\Programs\Python\Python310\lib\site-packages\pandas\core\generic.py", line 4507, in __delitem__
+    self._mgr = self._mgr.idelete(loc)
+  File "C:\Users\Pavel\AppData\Local\Programs\Python\Python310\lib\site-packages\pandas\core\internals\managers.py", line 1442, in idelete
+    nbs = self._slice_take_blocks_ax0(taker, only_slice=True, ref_inplace_op=True)
+  File "C:\Users\Pavel\AppData\Local\Programs\Python\Python310\lib\site-packages\pandas\core\internals\managers.py", line 788, in _slice_take_blocks_ax0
+    blklocs = algos.take_nd(
+  File "C:\Users\Pavel\AppData\Local\Programs\Python\Python310\lib\site-packages\pandas\core\array_algos\take.py", line 117, in take_nd
+    return _take_nd_ndarray(arr, indexer, axis, fill_value, allow_fill)
+  File "C:\Users\Pavel\AppData\Local\Programs\Python\Python310\lib\site-packages\pandas\core\array_algos\take.py", line 162, in _take_nd_ndarray
+    func(arr, indexer, out, fill_value)
+KeyboardInterrupt
+^C

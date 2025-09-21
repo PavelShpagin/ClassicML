@@ -33,8 +33,10 @@ def build_time_lagged_features(
         for lag in lags:
             feat[f"lag_{lag}"] = s.shift(lag)
         for w in rolling_windows:
-            feat[f"roll_mean_{w}"] = s.rolling(w).mean()
-            feat[f"roll_geo_mean_{w}"] = np.exp(np.log(s.replace(0, np.nan)).rolling(w).mean()).replace(
+            # IMPORTANT: use only past data for rolling stats to avoid leakage
+            s_shifted = s.shift(1)
+            feat[f"roll_mean_{w}"] = s_shifted.rolling(w).mean()
+            feat[f"roll_geo_mean_{w}"] = np.exp(np.log(s_shifted.replace(0, np.nan)).rolling(w).mean()).replace(
                 [np.inf, -np.inf], np.nan
             )
 

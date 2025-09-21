@@ -1,0 +1,25 @@
+Benchmark: start
+Benchmark: data loaded
+Traceback (most recent call last):
+  File "C:\Users\Pavel\Development\Kaggle\ClassicML\scripts\benchmark.py", line 165, in <module>
+    main()
+  File "C:\Users\Pavel\Development\Kaggle\ClassicML\scripts\benchmark.py", line 35, in main
+    lag_feats = build_time_lagged_features(train['new_house_transactions']).sort_values(['time','sector_id'])
+  File "C:\Users\Pavel\Development\Kaggle\ClassicML\src\features.py", line 39, in build_time_lagged_features
+    feat[f"roll_geo_mean_{w}"] = np.exp(np.log(s_shifted.replace(0, np.nan)).rolling(w).mean()).replace(
+  File "C:\Users\Pavel\Development\Kaggle\ClassicML\.venv\lib\site-packages\pandas\core\window\rolling.py", line 2259, in mean
+    return super().mean(
+  File "C:\Users\Pavel\Development\Kaggle\ClassicML\.venv\lib\site-packages\pandas\core\window\rolling.py", line 1625, in mean
+    return self._apply(window_func, name="mean", numeric_only=numeric_only)
+  File "C:\Users\Pavel\Development\Kaggle\ClassicML\.venv\lib\site-packages\pandas\core\window\rolling.py", line 619, in _apply
+    return self._apply_columnwise(homogeneous_func, name, numeric_only)
+  File "C:\Users\Pavel\Development\Kaggle\ClassicML\.venv\lib\site-packages\pandas\core\window\rolling.py", line 472, in _apply_columnwise
+    return self._apply_series(homogeneous_func, name)
+  File "C:\Users\Pavel\Development\Kaggle\ClassicML\.venv\lib\site-packages\pandas\core\window\rolling.py", line 458, in _apply_series
+    return obj._constructor(result, index=index, name=obj.name)
+  File "C:\Users\Pavel\Development\Kaggle\ClassicML\.venv\lib\site-packages\pandas\core\series.py", line 490, in __init__
+    index = ensure_index(index)
+  File "C:\Users\Pavel\Development\Kaggle\ClassicML\.venv\lib\site-packages\pandas\core\indexes\base.py", line 7593, in ensure_index
+    def ensure_index(index_like: Axes, copy: bool = False) -> Index:
+KeyboardInterrupt
+^C

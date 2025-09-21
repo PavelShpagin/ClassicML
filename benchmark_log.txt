@@ -1,0 +1,35 @@
+Traceback (most recent call last):
+  File "C:\Users\Pavel\Development\Kaggle\ClassicML\scripts\benchmark.py", line 15, in <module>
+    from src.models import competition_score, build_linear_pipeline
+  File "C:\Users\Pavel\Development\Kaggle\ClassicML\src\models.py", line 6, in <module>
+    from sklearn.base import RegressorMixin
+  File "C:\Users\Pavel\AppData\Local\Programs\Python\Python310\lib\site-packages\sklearn\__init__.py", line 84, in <module>
+    from .base import clone
+  File "C:\Users\Pavel\AppData\Local\Programs\Python\Python310\lib\site-packages\sklearn\base.py", line 19, in <module>
+    from .utils._estimator_html_repr import _HTMLDocumentationLinkMixin, estimator_html_repr
+  File "C:\Users\Pavel\AppData\Local\Programs\Python\Python310\lib\site-packages\sklearn\utils\__init__.py", line 11, in <module>
+    from ._chunking import gen_batches, gen_even_slices
+  File "C:\Users\Pavel\AppData\Local\Programs\Python\Python310\lib\site-packages\sklearn\utils\_chunking.py", line 8, in <module>
+    from ._param_validation import Interval, validate_params
+  File "C:\Users\Pavel\AppData\Local\Programs\Python\Python310\lib\site-packages\sklearn\utils\_param_validation.py", line 11, in <module>
+    from scipy.sparse import csr_matrix, issparse
+  File "C:\Users\Pavel\AppData\Local\Programs\Python\Python310\lib\site-packages\scipy\sparse\__init__.py", line 307, in <module>
+    from . import csgraph
+  File "C:\Users\Pavel\AppData\Local\Programs\Python\Python310\lib\site-packages\scipy\sparse\csgraph\__init__.py", line 187, in <module>
+    from ._laplacian import laplacian
+  File "C:\Users\Pavel\AppData\Local\Programs\Python\Python310\lib\site-packages\scipy\sparse\csgraph\_laplacian.py", line 7, in <module>
+    from scipy.sparse.linalg import LinearOperator
+  File "C:\Users\Pavel\AppData\Local\Programs\Python\Python310\lib\site-packages\scipy\sparse\linalg\__init__.py", line 129, in <module>
+    from ._isolve import *
+  File "C:\Users\Pavel\AppData\Local\Programs\Python\Python310\lib\site-packages\scipy\sparse\linalg\_isolve\__init__.py", line 4, in <module>
+    from .iterative import *
+  File "C:\Users\Pavel\AppData\Local\Programs\Python\Python310\lib\site-packages\scipy\sparse\linalg\_isolve\iterative.py", line 5, in <module>
+    from scipy.linalg import get_lapack_funcs
+  File "C:\Users\Pavel\AppData\Local\Programs\Python\Python310\lib\site-packages\scipy\linalg\__init__.py", line 203, in <module>
+    from ._misc import *
+  File "C:\Users\Pavel\AppData\Local\Programs\Python\Python310\lib\site-packages\scipy\linalg\_misc.py", line 3, in <module>
+    from .blas import get_blas_funcs
+  File "C:\Users\Pavel\AppData\Local\Programs\Python\Python310\lib\site-packages\scipy\linalg\blas.py", line 213, in <module>
+    from scipy.linalg import _fblas
+KeyboardInterrupt
+^C

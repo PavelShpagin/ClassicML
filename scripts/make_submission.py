@@ -7,7 +7,7 @@ import sys
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.append(str(ROOT))
 
-from src.data import DatasetPaths, load_all_training_tables, load_test, prepare_train_target, explode_test_id
+from src.data import DatasetPaths, load_all_training_tables, load_test, prepare_train_target, explode_test_id, split_month_sector
 from src.features import build_time_lagged_features
 from src.models import competition_score, build_linear_pipeline
 
@@ -49,16 +49,29 @@ def main():
     pipe = build_linear_pipeline(alpha=best_alpha, kind='ridge')
     pipe.fit(X, y)
 
+    # Recursive forecasting over the 12-month horizon using clean base series
     test_df = load_test(paths)
     test_exploded = explode_test_id(test_df)
-    lag_full = build_time_lagged_features(train['new_house_transactions'])
-    lag_full = lag_full.sort_values(['time','sector_id'])
-    lag_test = lag_full[lag_full['time'].isin(test_exploded['time'].unique())]
-    lag_test = lag_test.merge(test_exploded[['time','sector','sector_id','id']], on=['time','sector_id'], how='right')
-    X_test = lag_test[feature_cols].fillna(0)
-    y_pred_test = pipe.predict(X_test)
-    submission = lag_test[['id']].copy()
-    submission['new_house_transaction_amount'] = y_pred_test
+
+    base = split_month_sector(train['new_house_transactions'])[['time','sector_id','amount_new_house_transactions']]
+    current_series = base.copy()
+
+    predictions = []
+    for t in sorted(test_exploded['time'].unique()):
+        lag_tmp = build_time_lagged_features(current_series)
+        lag_t = lag_tmp[lag_tmp['time'] == t]
+        step_df = test_exploded[test_exploded['time'] == t][['id','sector_id','time']].merge(lag_t, on=['time','sector_id'], how='left')
+        X_t = step_df[feature_cols].fillna(0)
+        yhat_t = pipe.predict(X_t)
+        out_t = step_df[['id','sector_id','time']].copy()
+        out_t['new_house_transaction_amount'] = yhat_t
+        predictions.append(out_t[['id','new_house_transaction_amount']])
+
+        # Append predictions for next-step lag computation
+        update_t = out_t.rename(columns={'new_house_transaction_amount':'amount_new_house_transactions'})
+        current_series = pd.concat([current_series, update_t[['time','sector_id','amount_new_house_transactions']]], ignore_index=True)
+
+    submission = pd.concat(predictions, ignore_index=True)
     submission = test_df[['id']].merge(submission, on='id', how='left')
     Path(args.out).parent.mkdir(parents=True, exist_ok=True)
     submission.to_csv(args.out, index=False)
