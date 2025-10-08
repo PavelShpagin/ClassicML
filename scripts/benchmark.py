@@ -160,6 +160,33 @@ def main() -> None:
 
 	print('Benchmark: done')
 
+	# Export ridge plots
+	plots_dir = reports_dir / 'plots'
+	ensure_dir(plots_dir)
+	try:
+		fig, axes = plt.subplots(3, 1, figsize=(8, 10), sharex=True)
+		ridge_df_sorted = ridge_df.sort_values('alpha')
+		axes[0].plot(ridge_df_sorted['alpha'], ridge_df_sorted['score_mean'], marker='o')
+		axes[0].set_xscale('log')
+		axes[0].set_ylabel('Score (mean)')
+		axes[0].grid(True, linestyle='--', alpha=0.4)
+		axes[1].plot(ridge_df_sorted['alpha'], ridge_df_sorted['rmse_mean'], marker='o', color='tab:orange')
+		axes[1].set_xscale('log')
+		axes[1].set_ylabel('RMSE (mean)')
+		axes[1].grid(True, linestyle='--', alpha=0.4)
+		axes[2].plot(ridge_df_sorted['alpha'], ridge_df_sorted['mape_mean'], marker='o', color='tab:green')
+		axes[2].set_xscale('log')
+		axes[2].set_xlabel('alpha (log)')
+		axes[2].set_ylabel('MAPE (mean)')
+		axes[2].grid(True, linestyle='--', alpha=0.4)
+		fig.tight_layout()
+		out_plot = plots_dir / 'ridge_curves.png'
+		fig.savefig(out_plot, dpi=150)
+		plt.close(fig)
+		print(f'Benchmark: wrote plot {out_plot}')
+	except Exception as e:
+		print('Benchmark: plotting skipped:', e)
+
 
 if __name__ == '__main__':
 	main()

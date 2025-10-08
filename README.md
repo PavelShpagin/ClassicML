@@ -29,18 +29,20 @@ ClassicML/
 │   ├── cv_advanced_models.csv
 │   └── xgb_optuna_best.json
 ├── scripts/
-│   ├── baseline_geometric.py      # Winning approach (0.555 score)
+│   ├── baseline_geometric.py      # Geometric mean baseline
 │   ├── baseline_seasonality.py    # Best approach (0.562 score)
-│   ├── benchmark.py               # Model benchmarking
-│   ├── make_simple_submission.py  # Conservative baseline
-│   ├── make_submission.py         # Ridge regression submission
+│   ├── baseline_simple.py         # Conservative baseline
+│   ├── baseline_ridge.py          # Ridge regression baseline
+│   ├── benchmark.py               # Model benchmarking (writes CSVs and plots)
 │   └── tune_xgb_optuna.py        # Bayesian hyperparameter tuning
 ├── src/
 │   ├── data.py            # Data loading utilities
 │   ├── features.py        # Feature engineering
-│   └── models.py          # Model definitions and metrics
+│   ├── models.py          # Model definitions and metrics
+│   └── utils.py           # Shared helpers (wide matrix, geo mean, seasonality, I/O)
 ├── requirements.txt       # Python dependencies
-└── submission_*.csv       # Kaggle submission files
+├── submissions/           # All generated submissions (standardized)
+└── docker/                # Containerization to run best baseline
 ```
 
 ## Results Summary
@@ -100,18 +102,18 @@ unzip china-real-estate-demand-prediction.zip -d data/raw/
 ### Run Winning Solution
 
 ```bash
-# Generate submission with best approach (0.562 score)
+# Python: generate submission with best approach (0.562 score)
 python scripts/baseline_seasonality.py
 
 # Submit to Kaggle
 kaggle competitions submit -c china-real-estate-demand-prediction \
-  -f submission_seasonality.csv -m "Your message"
+  -f submissions/baseline_seasonality.csv -m "Your message"
 ```
 
-### Run Experiments
+### Run Experiments and View Plots
 
 ```bash
-# Run model benchmarking
+# Run model benchmarking (writes CSVs and plots to reports/)
 python scripts/benchmark.py
 
 # Tune XGBoost with Optuna
@@ -119,6 +121,19 @@ python scripts/tune_xgb_optuna.py
 
 # Run EDA notebook
 jupyter notebook notebooks/eda.ipynb
+```
+
+### Run in Docker (best baseline)
+
+```bash
+# Build image
+docker build -t classicml -f docker/Dockerfile .
+
+# Run (mount data and submissions)
+docker run --rm \
+  -v "$(pwd)/data/raw:/app/data/raw" \
+  -v "$(pwd)/submissions:/app/submissions" \
+  classicml
 ```
 
 ## Methodology

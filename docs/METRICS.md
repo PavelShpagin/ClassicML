@@ -6,7 +6,7 @@ The competition uses a custom metric that severely penalizes poor predictions. T
 
 ## Metric Formula
 
-### Stage 1: Calculate APE for each prediction
+### Stage 1: Calculate APE (Absolute Percentage Error) for each prediction
 
 ```python
 APE = |actual - predicted| / max(actual, 1)
@@ -20,19 +20,19 @@ Note: Uses `max(actual, 1)` to avoid division by zero
 def competition_score(y_true, y_pred):
     # Calculate APE for each prediction
     ape = np.abs(y_true - y_pred) / np.maximum(y_true, 1)
-    
+
     # Identify "good" predictions (APE ≤ 100%)
     good_mask = ape <= 1.0
     good_rate = good_mask.mean()
-    
+
     # Stage 1: Check if enough predictions are good
     if good_rate < 0.3:
         return 0.0  # Catastrophic failure!
-    
+
     # Stage 2: Score based on good predictions only
     good_ape = ape[good_mask]
     score = good_rate * np.mean(1 / (1 + good_ape))
-    
+
     return score
 ```
 
@@ -43,6 +43,7 @@ def competition_score(y_true, y_pred):
 If less than 30% of predictions have APE ≤ 100%, the score immediately becomes 0.
 
 **Example**:
+
 - 100 predictions total
 - 29 have APE ≤ 100% (excellent predictions)
 - 71 have APE > 100% (poor predictions)
@@ -51,11 +52,13 @@ If less than 30% of predictions have APE ≤ 100%, the score immediately becomes
 ### 2. Zero Value Sensitivity
 
 When actual = 0:
+
 - Any non-zero prediction gives APE = |predicted| / 1 = predicted
 - Predicting 2 when actual is 0 gives APE = 200%
 - This single prediction can push you below the 30% threshold
 
 **Example Impact**:
+
 ```python
 # Scenario: 96 sectors × 12 months = 1152 predictions
 # If 21% are zeros (242 predictions)
@@ -68,24 +71,26 @@ When actual = 0:
 
 The metric penalizes overestimation on zeros much more than underestimation on large values:
 
-| Actual | Predicted | APE | Impact |
-|--------|-----------|-----|--------|
-| 0 | 100 | 10000% | Catastrophic |
-| 100 | 0 | 100% | Acceptable |
-| 10000 | 5000 | 50% | Good |
-| 10000 | 20000 | 100% | Borderline |
+| Actual | Predicted | APE    | Impact       |
+| ------ | --------- | ------ | ------------ |
+| 0      | 100       | 10000% | Catastrophic |
+| 100    | 0         | 100%   | Acceptable   |
+| 10000  | 5000      | 50%    | Good         |
+| 10000  | 20000     | 100%   | Borderline   |
 
 ## Strategic Implications
 
 ### 1. Conservative Predictions Win
 
 Better to predict 0 when unsure:
+
 - If actual = 0: Perfect (APE = 0%)
 - If actual > 0: At worst APE = 100%
 
 ### 2. Identify Zero Patterns
 
 Critical to identify which sectors will be zero:
+
 - Historical zeros often repeat
 - Sectors with declining trends likely to hit zero
 - New sectors (like 95) safer to predict as zero
@@ -93,6 +98,7 @@ Critical to identify which sectors will be zero:
 ### 3. Avoid Middle Ground
 
 The metric pushes toward extreme strategies:
+
 - Very conservative (many zeros)
 - Very accurate (high confidence non-zeros)
 - Middle ground (small non-zero values) is dangerous
@@ -180,6 +186,7 @@ Key: Cliff at 0.3 - below this, score = 0
 ## Conclusion
 
 This metric design fundamentally changes the modeling approach:
+
 - Traditional optimization (minimize RMSE/MAE) doesn't work
 - Need to optimize for "good enough" predictions, not perfect ones
 - Conservative strategies outperform aggressive optimization

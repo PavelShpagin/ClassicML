@@ -1,0 +1,15 @@
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.swp
+*.swo
+.ipynb_checkpoints/
+.git/
+.gitignore
+legacy/
+models/
+submissions/
+china-real-estate-demand-prediction.zip
+
+

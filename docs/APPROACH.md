@@ -20,6 +20,7 @@ This document details the technical approach used to achieve a 0.56248 score on 
 **Approach**: Ridge Regression, XGBoost with extensive feature engineering
 
 **Features**:
+
 - 12 lagged values for each sector
 - Rolling means (3, 6, 12 months)
 - Rolling standard deviations
@@ -28,6 +29,7 @@ This document details the technical approach used to achieve a 0.56248 score on 
 **Result**: Local CV ~0.35-0.50, Public LB: 0.00000
 
 **Why it Failed**:
+
 - Models occasionally predicted small non-zero values for zero sectors
 - Even one bad prediction (APE > 100%) could cascade to zero score
 - Complex models couldn't learn the conservative behavior required
@@ -37,6 +39,7 @@ This document details the technical approach used to achieve a 0.56248 score on 
 **Approach**: Simple median-based predictions
 
 **Method**:
+
 ```python
 # For each sector, use historical median
 # Apply zero guard for sectors with recent zeros
@@ -51,6 +54,7 @@ This document details the technical approach used to achieve a 0.56248 score on 
 **Approach**: Geometric mean of recent months
 
 **Method**:
+
 ```python
 # 1. Calculate geometric mean of last 6 months
 geo_mean = exp(mean(log(last_6_months)))
@@ -63,6 +67,7 @@ if min(last_6_months) == 0:
 **Result**: Public LB: 0.55528
 
 **Why it Worked**:
+
 - Geometric mean naturally handles skewed distributions
 - Zero guard prevents catastrophic errors
 - Simple enough to be robust
@@ -72,6 +77,7 @@ if min(last_6_months) == 0:
 **Approach**: Geometric mean + December boost
 
 **Method**:
+
 ```python
 # Base prediction from geometric mean
 base_pred = geometric_mean_with_zero_guard()
@@ -86,6 +92,7 @@ else:
 **Result**: Public LB: 0.56248
 
 **Seasonality Analysis**:
+
 - December shows 30% higher transactions on average
 - Boost factor calculated from historical December/non-December ratios
 - Capped at 2x to avoid extreme predictions
@@ -129,11 +136,11 @@ def geometric_mean(values):
     """
     # Replace zeros with NaN for calculation
     non_zero = values.replace(0, np.nan)
-    
+
     # Geometric mean
     log_mean = np.log(non_zero).mean(skipna=True)
     geo_mean = np.exp(log_mean)
-    
+
     # Fill NaN with 0
     return geo_mean if not np.isnan(geo_mean) else 0
 ```
@@ -142,11 +149,11 @@ def geometric_mean(values):
 
 ### Geometric Mean Parameters
 
-| Parameter | Value | Rationale |
-|-----------|-------|-----------|
-| Lookback months | 6 | Balance between recency and stability |
-| Zero guard window | 6 | Same as lookback for consistency |
-| December boost | 1.3 | Historical average boost factor |
+| Parameter         | Value | Rationale                             |
+| ----------------- | ----- | ------------------------------------- |
+| Lookback months   | 6     | Balance between recency and stability |
+| Zero guard window | 6     | Same as lookback for consistency      |
+| December boost    | 1.3   | Historical average boost factor       |
 
 ### Why These Values?
 
@@ -168,12 +175,12 @@ for train_idx, val_idx in tscv.split(X):
 
 ### Local vs Public Score Correlation
 
-| Approach | Local CV | Public LB | Gap |
-|----------|----------|-----------|-----|
-| XGBoost | 0.45 | 0.00 | -0.45 |
-| Ridge | 0.38 | 0.00 | -0.38 |
-| Geometric | 0.52 | 0.555 | +0.035 |
-| Geo+Season | 0.53 | 0.562 | +0.032 |
+| Approach   | Local CV | Public LB | Gap    |
+| ---------- | -------- | --------- | ------ |
+| XGBoost    | 0.45     | 0.00      | -0.45  |
+| Ridge      | 0.38     | 0.00      | -0.38  |
+| Geometric  | 0.52     | 0.555     | +0.035 |
+| Geo+Season | 0.53     | 0.562     | +0.032 |
 
 **Key Insight**: Simple methods showed better local-public correlation
 
