@@ -179,16 +179,23 @@ docker run --rm \
 - Custom competition metric implementation
 - Careful validation to avoid overfitting
 
-## Lab Work Documentation
+## Documentation
 
-The complete lab report is available in `notebooks/lab_final.ipynb`, which includes:
+### Core Documentation
 
-- Detailed competition analysis
-- Data visualization and insights
-- Model benchmarking results
-- RMSE/MAPE curves for different methods
-- Bayesian optimization results
-- Final leaderboard performance
+- **`README.md`** (this file): Project overview, setup, usage, results summary
+- **`docs/APPROACH.md`**: Technical approach, solution evolution, implementation details
+- **`docs/METRICS.md`**: Deep dive into two-stage MAPE metric, why it's challenging
+- **`docs/CONCEPTS.md`**: Technical concepts explained (lags, rolling mean, XGBoost, etc.)
+- **`docs/LAB_SUMMARY.md`**: Lab completion checklist and achievements
+- **`notebooks/README.md`**: Notebook descriptions and visualizations guide
+
+### Jupyter Notebooks
+
+- **`notebooks/01_eda.ipynb`**: Exploratory data analysis with visualizations
+- **`notebooks/02_baseline_seasonality.ipynb`**: Best method (geometric mean + seasonality)
+- **`notebooks/03_baseline_geometric.ipynb`**: Geometric mean baseline
+- **`notebooks/04_ridge_regression.ipynb`**: Ridge regression with feature engineering
 
 ## Lessons Learned
 
