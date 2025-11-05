@@ -47,13 +47,15 @@ ClassicML/
 
 ## Results Summary
 
-| Method                           | Public Score | Description                                     |
-| -------------------------------- | ------------ | ----------------------------------------------- |
-| **Geometric Mean + Seasonality** | **0.56248**  | Best score - Geometric mean with December boost |
-| Geometric Mean Baseline          | 0.55528      | 6-month geometric mean with zero guard          |
-| Simple Median                    | 0.21591      | Conservative median-based approach              |
-| XGBoost (Optuna-tuned)           | 0.00000      | Failed due to zero predictions                  |
-| Ridge Regression                 | 0.00000      | Linear model couldn't handle zeros              |
+| Method                           | Local CV | Public Score | Description                                     |
+| -------------------------------- | -------- | ------------ | ----------------------------------------------- |
+| **Geometric Mean + Seasonality** | 0.53     | **0.56248**  | Best score - Geometric mean with December boost |
+| Geometric Mean Baseline          | 0.52     | 0.55528      | 6-month geometric mean with zero guard          |
+| Simple Median                    | ~0.22    | 0.21591      | Conservative median-based approach              |
+| XGBoost (Optuna-tuned)           | 0.45     | 0.00000      | Failed due to zero predictions                  |
+| Ridge Regression                 | 0.38     | 0.00000      | Linear model couldn't handle zeros              |
+
+**Note**: Only XGBoost was tuned with Optuna (Bayesian hyperparameter optimization). Other models used manual hyperparameter selection.
 
 ## Key Insights
 
@@ -61,7 +63,7 @@ ClassicML/
 
 1. **Geometric Mean**: More robust than arithmetic mean for skewed distributions
 2. **Zero Guard**: Critical - if any of last 6 months was zero, predict zero
-3. **Seasonality**: December typically shows 30% higher transactions
+3. **Seasonality**: December typically shows 30% higher transactions (seasonality = monthly patterns, specifically December boost factor of ~1.3x)
 4. **Simplicity**: Conservative approaches outperformed complex ML models
 
 ### What Didn't Work
@@ -144,11 +146,57 @@ docker run --rm \
 - Identified 21% of training samples have zero transactions
 - Found December consistently shows higher transaction volumes
 
-### 2. Feature Engineering
+### 2. Feature Engineering & Processing
 
-- Time-lagged features (1-12 months)
-- Rolling statistics (mean, std)
-- Careful handling of data leakage in time series
+#### Data Processing
+
+- **Time encoding**: Converted month/year to time index (Jan 2019 = 0, Feb 2019 = 1, ...)
+- **Wide format conversion**: Pivoted data to time × sector matrix for efficient computation
+- **Zero handling**: Special handling for sectors with zero transactions (21% of training data)
+- **Missing sector handling**: Added sector 95 (missing in training, present in test) with zeros
+
+#### Feature Engineering (ML Models Only)
+
+**Note**: The winning approach (Geometric Mean + Seasonality) uses **NO traditional features** - only raw historical transaction amounts. However, ML models attempted extensive feature engineering:
+
+##### Temporal Features (Used in Ridge/XGBoost/CatBoost)
+
+- **Lagged values**: `lag_1`, `lag_2`, `lag_3`, `lag_6`, `lag_12` (transaction amounts from 1, 2, 3, 6, 12 months ago)
+- **Rolling statistics**:
+  - Rolling means: `roll_mean_3`, `roll_mean_6`, `roll_mean_12` (3, 6, 12-month windows)
+  - Rolling standard deviations: `roll_std_3`, `roll_std_6`, `roll_std_12`
+  - Rolling geometric means: `roll_geo_mean_3`, `roll_geo_mean_6`, `roll_geo_mean_12`
+  - Rolling maximums: `roll_max_3`, `roll_max_6`, `roll_max_12`
+- **Time-based features**:
+  - `month_num`: Month number (1-12)
+  - `quarter`: Quarter (1-4)
+  - `is_december`: Binary indicator for December
+  - `december_boost`: Per-sector December boost factor
+
+##### External Data Features (Tried but Didn't Help)
+
+- **POI (Points of Interest)**: Static sector features (schools, hospitals, metro stations, malls, parks)
+- **Nearby sectors**: Aggregated transactions from neighboring sectors (mean, sum, std, max)
+- **Land transactions**: Nearby land transaction amounts
+- **Pre-owned house transactions**: Nearby pre-owned house transaction amounts
+- **City-level features**: GDP, resident population (from city indexes)
+
+##### Feature Selection
+
+- **No explicit feature selection**: All engineered features were used in ML models
+- **Missing value handling**: Filled with -999 or -1 (depending on model)
+- **Leakage prevention**: All rolling features use `shift(1)` to avoid future data leakage
+
+#### Winning Approach Features (Geometric Mean + Seasonality)
+
+**Uses only historical transaction amounts - no feature engineering:**
+
+1. **Raw historical values**: Last 6 months of transaction amounts per sector
+2. **Geometric mean calculation**: Computed from raw values
+3. **Zero guard**: Binary rule based on presence of zeros in last 6 months
+4. **December boost**: Per-sector multiplier (1.0-2.0x) computed from historical December/non-December ratios
+
+**Key Insight**: The best model uses **zero features** (only raw data), while ML models used **20-50+ engineered features** and performed worse. This demonstrates that feature engineering is not always beneficial - sometimes raw data + domain knowledge beats complex feature sets.
 
 ### 3. Model Development
 
@@ -159,8 +207,8 @@ docker run --rm \
 
 #### Advanced Models
 
-- XGBoost with Bayesian optimization (Optuna)
-- LightGBM and CatBoost experiments
+- XGBoost with Bayesian optimization (Optuna) - only XGBoost was tuned with Optuna
+- LightGBM and CatBoost experiments (manual hyperparameter selection)
 - Time series cross-validation
 
 #### Winning Approach
@@ -187,6 +235,8 @@ docker run --rm \
 - **`docs/APPROACH.md`**: Technical approach, solution evolution, implementation details
 - **`docs/METRICS.md`**: Deep dive into two-stage MAPE metric, why it's challenging
 - **`docs/CONCEPTS.md`**: Technical concepts explained (lags, rolling mean, XGBoost, etc.)
+- **`docs/METHODS_OVERVIEW.md`**: Mathematical explanations of all methods used
+- **`docs/PREPROCESSING.md`**: Data preprocessing explained with examples (time encoding, format conversion, zero handling, lags)
 - **`docs/LAB_SUMMARY.md`**: Lab completion checklist and achievements
 - **`notebooks/README.md`**: Notebook descriptions and visualizations guide
 

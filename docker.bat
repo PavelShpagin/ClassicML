@@ -11,12 +11,6 @@ if "%1"=="" (
     set "METHOD=%1"
 )
 
-echo Checking Docker...
-docker info >nul 2>&1 || (
-    echo ERROR: Docker not running. Start Docker Desktop and retry.
-    exit /b 1
-)
-
 if not exist "%ROOT%\data\raw" (
     echo ERROR: Missing %ROOT%\data\raw
     echo Unzip Kaggle data into data\raw\ and retry.
@@ -27,10 +21,14 @@ if not exist "%ROOT%\submissions" mkdir "%ROOT%\submissions"
 
 echo Building image...
 cd /d "%ROOT%"
-docker build -q -t classicml -f docker\Dockerfile . || exit /b 1
+docker.exe build -q -t classicml -f docker\Dockerfile .
+if errorlevel 1 (
+    echo ERROR: Docker build failed
+    exit /b 1
+)
 
 echo Running method: %METHOD%
-docker run --rm -e MODE=%METHOD% -v "%ROOT%\data\raw:/app/data/raw" -v "%ROOT%\submissions:/app/submissions" classicml
+docker.exe run --rm -e MODE=%METHOD% -v "%ROOT%\data/raw:/app/data/raw" -v "%ROOT%\submissions:/app/submissions" classicml
 
 endlocal
 

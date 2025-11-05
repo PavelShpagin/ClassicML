@@ -22,6 +22,7 @@ data/interim/
 reports/figures/
 models/
 submission.csv
+catboost_info/
 
 # IDE / tooling
 .vscode/
